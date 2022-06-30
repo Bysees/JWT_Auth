@@ -1,0 +1,12 @@
+User = {
+  _id: new ObjectId(string)
+  login: string,
+  password: string
+}
+
+Post = {
+  _id: new ObjectId(string)
+  user_id: User._id
+  timestamp: string,
+  text: string
+}

@@ -1,9 +1,6 @@
 const { ObjectId } = require('mongodb')
+const { Post, User } = require('../schema')
 const ApiError = require('../error/apiError')
-const client = require('../mongodb')
-
-const postsDB = client.db().collection('posts')
-const usersDB = client.db().collection('users')
 
 class PostController {
 
@@ -12,13 +9,14 @@ class PostController {
       const post = req.body
       const { login } = req.auth
 
-      const user = await usersDB.findOne({ login })
-      const refPost = { ...post, user_id: user._id }
-      const { insertedId } = await postsDB.insertOne(refPost)
-      const postWithId = { ...post, _id: insertedId }
+      const user = await User.findOne({ login })
+      const refPost = { ...post, user_id: user.id }
+      const postDocument = await Post.create(refPost)
+      postDocument.user_id = undefined //? Remove the field
 
-      res.json(postWithId)
-    } catch {
+      res.json(postDocument)
+    } catch (err) {
+      console.log(err)
       next(ApiError.internal('Server error, try again later'))
     }
   }
@@ -27,10 +25,10 @@ class PostController {
     try {
       const { login } = req.auth
 
-      const user = await usersDB.findOne({ login })
-      const filter = { user_id: user._id, }
-      const projection = { user_id: 0 } //? Exclude that field from finded result
-      const posts = await postsDB.find(filter).project(projection).toArray()
+      const user = await User.findOne({ login })
+      const filter = { user_id: user.id, }
+      const projector = { user_id: 0, }
+      const posts = await Post.find(filter).select(projector)
 
       res.json(posts)
     } catch (err) {
@@ -46,17 +44,11 @@ class PostController {
 
       const filter = { _id: ObjectId(id) }
       const update = { $set: { text } }
-      const {
-        ok: isUpdateSuccessful,
-        value: post
-      } = await postsDB.findOneAndUpdate(filter, update)
+      const options = { runValidators: true, returnDocument: 'after' }
+      const projector = { user_id: 0 }
+      const updatedPost = await Post.findOneAndUpdate(filter, update, options).select(projector)
 
-      if (isUpdateSuccessful) {
-        delete post.user_id
-        return res.json(post)
-      }
-
-      return next(ApiError.badRequest('Failed to update'))
+      return res.json(updatedPost)
     } catch (err) {
       console.log(err)
       next(ApiError.internal('Server error, try again later'))
@@ -67,17 +59,11 @@ class PostController {
     try {
       const { id } = req.params
 
-      const {
-        ok: isDeleteSuccessful,
-        value: post
-      } = await postsDB.findOneAndDelete({ _id: ObjectId(id) })
+      const filter = { _id: ObjectId(id) }
+      const projector = { user_id: 0 }
+      const deletedPost = await Post.findOneAndDelete(filter).select(projector)
 
-      if (isDeleteSuccessful) {
-        delete post.user_id
-        return res.json(post)
-      }
-
-      return next(ApiError.badRequest('Failed to delete'))
+      return res.json(deletedPost)
     } catch (err) {
       console.log(err)
       next(ApiError.internal('Server error, try again later'))

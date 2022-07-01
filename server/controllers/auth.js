@@ -1,20 +1,21 @@
 const ApiError = require('../error/apiError')
-const { User } = require('../schema')
+const { User } = require('../models')
+const bcrypt = require('bcryptjs')
 
 class AuthController {
-
   async registration(req, res, next) {
     try {
       const { login, password } = req.body
 
       //? Сделать касмотную проверку на существование логина.
-      const isLoginTaken = await User.findOne({ login })
+      const candidate = await User.findOne({ login })
 
-      if (isLoginTaken) {
+      if (candidate) {
         return next(ApiError.badRequest(`Login <${login}> already taken`))
       }
 
-      await User.create({ login, password })
+      const hashPassword = bcrypt.hashSync(password, 5)
+      await User.create({ login, password: hashPassword })
 
       res.json({ login })
     } catch (err) {
@@ -27,7 +28,14 @@ class AuthController {
     try {
       const { login, password } = req.body
 
-      const user = await User.findOne({ login, password })
+      const user = await User.findOne({ login })
+
+      const isValidPassword = bcrypt.compareSync(password, user.password)
+
+      if (!isValidPassword) {
+        return next(ApiError.badRequest(`Incorrect login or password `))
+      }
+
 
       if (user) {
         return res.json({ login })

@@ -1,13 +1,13 @@
 import { FC, useState } from "react"
 import { getCurrentDate } from "../../utils/date"
 import { PostService } from '../../api/PostService'
-import type { IPost } from "../../types"
 import Post from "./Post"
 import PostForm from "./PostForm"
 import styles from './index.module.scss'
 import { useFetch } from "../../hooks/useFetch"
-import axios, { AxiosError } from "axios"
-import { axiosErrorHandler, ResponseErrorType } from "../../api"
+import { IPost } from "../../models/IPost"
+import { responseErrorHandler } from "../../api"
+
 
 interface Props {
   login: string
@@ -17,9 +17,9 @@ type MutateError = 'create' | 'update' | 'delete' | null //? Подумать к
 
 const Posts: FC<Props> = ({ login }) => {
 
+  //? Возвращённая ошибка то не обновляется
   const [posts, error, setPosts] = useFetch<IPost[]>(PostService.getAll, [])
   const [mutateError, setMutateError] = useState<string | null>(null)
-
 
   const addPost = async (text: string) => {
     if (!text) return
@@ -33,36 +33,21 @@ const Posts: FC<Props> = ({ login }) => {
       const response = await PostService.create(post)
       setPosts(posts => [...posts, response.data])
     } catch (err) {
-      console.error(err)
-
-      if (axios.isAxiosError(err)) {
-        let errMessage = axiosErrorHandler(err as AxiosError<ResponseErrorType>)
-        return setMutateError(errMessage)
-      }
-
-      throw err
+      responseErrorHandler(err, setMutateError)
     }
   }
 
-  const removePost = async (_id: string) => {
+  const removePost = (_id: string) => async () => {
     try {
-
       await PostService.remove(_id)
 
       setPosts(posts => posts.filter(post => post._id !== _id))
     } catch (err) {
-      console.error(err)
-
-      if (axios.isAxiosError(err)) {
-        let errMessage = axiosErrorHandler(err as AxiosError<ResponseErrorType>)
-        return setMutateError(errMessage)
-      }
-
-      throw err
+      responseErrorHandler(err, setMutateError)
     }
   }
 
-  const updatePost = async (_id: string, editedText: string) => {
+  const updatePost = (_id: string) => async (editedText: string) => {
     try {
       await PostService.update(_id, { text: editedText })
 
@@ -72,16 +57,8 @@ const Posts: FC<Props> = ({ login }) => {
         }
         return post
       }))
-
     } catch (err) {
-      console.error(err)
-
-      if (axios.isAxiosError(err)) {
-        let errMessage = axiosErrorHandler(err as AxiosError<ResponseErrorType>)
-        return setMutateError(errMessage)
-      }
-
-      throw err
+      responseErrorHandler(err, setMutateError)
     }
   }
 
@@ -93,15 +70,14 @@ const Posts: FC<Props> = ({ login }) => {
 
       <section>
         {error && <div>{error}</div>}
-        {posts?.map(({ _id, timestamp, text }) => (
+        {posts.map(({ _id, timestamp, text }) => (
           <Post
             key={_id}
-            _id={_id}
             username={login}
             text={text}
             timestamp={timestamp}
-            updatePost={updatePost}
-            removePost={removePost}
+            updatePost={updatePost(_id)}
+            removePost={removePost(_id)}
           />
         )).reverse()}
       </section>

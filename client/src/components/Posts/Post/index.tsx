@@ -1,15 +1,15 @@
-import { FC, useEffect, useMemo, useState } from 'react'
-import { IPost } from '../../../types'
+import { FC, useEffect, useState } from 'react'
+import { IPost } from '../../../models/IPost'
 import styles from './index.module.scss'
 
 
-interface Props extends IPost {
+interface Props extends Omit<IPost, '_id'> {
   username: string
-  updatePost: (_id: string, editedText: string) => Promise<void>
-  removePost: (_id: string) => Promise<void>
+  updatePost: (editedText: string) => Promise<void>
+  removePost: () => Promise<void>
 }
 
-const Post: FC<Props> = ({ _id, text, timestamp, username, updatePost, removePost }) => {
+const Post: FC<Props> = ({ text, timestamp, username, updatePost, removePost }) => {
 
   const [updating, setUpdating] = useState<boolean>(false)
   const [deleting, setDeleting] = useState<boolean>(false)
@@ -25,7 +25,7 @@ const Post: FC<Props> = ({ _id, text, timestamp, username, updatePost, removePos
     }
 
     setUpdating(true)
-    await updatePost(_id, editedText)
+    await updatePost(editedText)
     setUpdating(false)
     toogleEdit(false)
     setEditedText('')
@@ -33,7 +33,7 @@ const Post: FC<Props> = ({ _id, text, timestamp, username, updatePost, removePos
 
   const onClickHandler = async () => {
     setDeleting(true)
-    await removePost(_id)
+    await removePost()
     setDeleting(false)
   }
 

@@ -1,32 +1,41 @@
-import axios, { AxiosError, AxiosRequestConfig } from "axios"
+import axios, { AxiosError, AxiosRequestConfig, AxiosRequestHeaders } from "axios"
+import { Dispatch, SetStateAction } from "react"
+import { ResponseError } from "../models/response/ErrorRespose"
+
+const API_URL = 'http://localhost:4000'
 
 export const http = axios.create({
-  baseURL: 'http://localhost:4000',
+  baseURL: API_URL,
+  withCredentials: true,
   timeout: 3000
 })
 
-const interceptor = (config: AxiosRequestConfig) => {
+http.interceptors.request.use((config: AxiosRequestConfig) => {
+  config.headers = {} as AxiosRequestHeaders
   const login = localStorage.getItem('auth')
-
   if (login) {
-    config.headers = {
-      'Authorization': `Bearer ${login}`
-    }
+    config.headers.Authentification = `Bearer ${login}`
   }
-  return config
+  return config;
+})
+
+
+
+//! Потом надо вынести в какой-нибудь другой файл, пока непонятно какой
+export function responseErrorHandler(
+  err: any | unknown,
+  callback: Dispatch<SetStateAction<string | null>>
+) {
+  const error = err as Error | AxiosError<ResponseError>
+  console.error(error)
+  let errorMessage = 'Unexpected error, try again later...'
+
+  if (axios.isAxiosError(error)) {
+    errorMessage = error.response?.data?.message ?? error.message
+    return callback(errorMessage)
+  }
+
+  throw error
 }
 
-http.interceptors.request.use(interceptor)
 
-
-export type ResponseErrorType = { message?: string }
-
-export function axiosErrorHandler(error: AxiosError<ResponseErrorType>): string {
-  let errorMessage = 'Failed to make a request'
-
-  if (error.response) {
-    errorMessage = error.response.data?.message ?? errorMessage
-  }
-
-  return errorMessage
-}

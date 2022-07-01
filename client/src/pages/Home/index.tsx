@@ -11,7 +11,7 @@ const Home = () => {
     <div>
       {auth.isLoginned
         ? <Posts login={auth.login} />
-        : <h1>Authorize for send posts</h1>
+        : <h1>Log in for send posts</h1>
       }
     </div>
   )

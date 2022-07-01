@@ -4,11 +4,10 @@ import { AuthService } from '../../api/AuthService'
 import { AuthContext } from "../../context/auth"
 import { useNavigate } from "react-router-dom"
 import { validator } from "../../utils/authValidator"
-import axios, { AxiosError } from "axios"
-import { axiosErrorHandler, ResponseErrorType } from "../../api"
+import { responseErrorHandler } from "../../api"
 
 interface Props {
-  registration?: boolean,
+  registration?: boolean
 }
 
 const Authentification: FC<Props> = ({ registration = false }) => {
@@ -24,13 +23,11 @@ const Authentification: FC<Props> = ({ registration = false }) => {
 
   const doAuth = async (event: FormEvent) => {
     event.preventDefault()
-
     const errorMessage = validator(login, password)
 
     if (errorMessage) {
       return setError(errorMessage)
     }
-
 
     try {
       await AuthService[authQuery]({ login, password })
@@ -40,14 +37,7 @@ const Authentification: FC<Props> = ({ registration = false }) => {
       setLogin('')
       setPassword('')
     } catch (err) {
-      console.error(err)
-
-      if (axios.isAxiosError(err)) {
-        let errMessage = axiosErrorHandler(err as AxiosError<ResponseErrorType>)
-        return setError(errMessage)
-      }
-
-      throw err
+      responseErrorHandler(err, setError)
     }
   }
 

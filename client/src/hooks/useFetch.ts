@@ -1,7 +1,6 @@
-import axios, { AxiosResponse, AxiosError } from 'axios';
-import { Dispatch, SetStateAction, useEffect } from 'react';
-import { useState } from 'react';
-import { axiosErrorHandler, ResponseErrorType } from '../api';
+import { AxiosResponse } from 'axios';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { responseErrorHandler } from '../api';
 
 type ErrorType = string | null
 type ReturnHookType<T> = [T, ErrorType, Dispatch<SetStateAction<T>>]
@@ -18,14 +17,7 @@ export function useFetch<T>(fetchCallback: FetchType<T>, initial: T): ReturnHook
         const response = await fetchCallback()
         setState(response.data)
       } catch (err) {
-        console.error(err)
-
-        if (axios.isAxiosError(err)) {
-          let errMessage = axiosErrorHandler(err as AxiosError<ResponseErrorType>)
-          return setError(errMessage)
-        }
-
-        throw err
+        responseErrorHandler(err, setError)
       }
     }
 
@@ -34,4 +26,3 @@ export function useFetch<T>(fetchCallback: FetchType<T>, initial: T): ReturnHook
 
   return [state, error, setState]
 }
-

@@ -2,12 +2,12 @@ const ApiError = require('../error/apiError')
 const { User } = require('../models')
 const bcrypt = require('bcryptjs')
 
+
 class AuthController {
   async registration(req, res, next) {
     try {
       const { login, password } = req.body
 
-      //? Сделать касмотную проверку на существование логина.
       const candidate = await User.findOne({ login })
 
       if (candidate) {

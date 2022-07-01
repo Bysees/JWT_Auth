@@ -1,20 +1,18 @@
+import { AxiosResponse } from 'axios';
 import { http } from ".";
+import { AuthRequst } from '../models/request/AuthRequest';
+import { AuthResponse } from '../models/response/AuthResponse';
 
-type RegistrationBody = {
-  login: string
-  password: string
-}
-
-type LoginBody = RegistrationBody
 
 export class AuthService {
-  static async registration(body: RegistrationBody) {
-    const response = await http.post('/auth/registration', body)
+  static async registration(body: AuthRequst): Promise<AxiosResponse<AuthResponse>> {
+    const response = await http.post<AuthResponse>('/auth/registration', body)
     return response
+
   }
 
-  static async login(body: LoginBody) {
-    const response = await http.post('/auth/login', body)
+  static async login(body: AuthRequst): Promise<AxiosResponse<AuthResponse>> {
+    const response = await http.post<AuthResponse>('/auth/login', body)
     return response
   }
 

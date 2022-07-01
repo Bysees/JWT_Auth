@@ -1,9 +1,9 @@
 const { ObjectId } = require('mongodb')
-const { Post, User } = require('../schema')
+const { Post, User } = require('../models')
 const ApiError = require('../error/apiError')
 
-class PostController {
 
+class PostController {
   async create(req, res, next) {
     try {
       const post = req.body
@@ -12,7 +12,7 @@ class PostController {
       const user = await User.findOne({ login })
       const refPost = { ...post, user_id: user.id }
       const postDocument = await Post.create(refPost)
-      postDocument.user_id = undefined //? Remove the field
+      postDocument.user_id = undefined
 
       res.json(postDocument)
     } catch (err) {
@@ -24,7 +24,6 @@ class PostController {
   async getAll(req, res, next) {
     try {
       const { login } = req.auth
-
       const user = await User.findOne({ login })
       const filter = { user_id: user.id, }
       const projector = { user_id: 0, }

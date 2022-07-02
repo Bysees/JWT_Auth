@@ -1,4 +1,8 @@
 import React, { FC, ReactNode, useEffect, useState } from "react";
+import { AuthService } from "../api/AuthService";
+import jwt_decode from "jwt-decode";
+import { IUser } from "../models/IUser";
+
 
 type Auth = {
   login: string,
@@ -7,42 +11,55 @@ type Auth = {
 
 interface IAuthContext {
   auth: Auth
-  doLogin: (login: string) => void
+  doLogin: (token: string) => void
   doLogout: () => void
 }
 
 export const AuthContext = React.createContext<IAuthContext>({} as IAuthContext);
 
+
 interface Props {
   children: ReactNode
 }
 
+//! Потом вынести в components
 const AuthProvider: FC<Props> = ({ children }) => {
-
   const [auth, setAuthState] = useState<Auth>({
     login: '',
     isLoginned: false,
   })
 
   useEffect(() => {
-    const storageLogin = localStorage.getItem('auth')
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        if (!token) return
 
-    if (storageLogin) {
-      setAuthState({
-        login: storageLogin,
-        isLoginned: true
-      })
+        const response = await AuthService.check()
+        localStorage.setItem('token', response.data.token)
+        const { login } = jwt_decode<IUser>(response.data.token)
+
+        setAuthState({
+          login,
+          isLoginned: true
+        })
+      } catch (err) {
+        console.log(err)
+      }
     }
+
+    checkAuth()
   }, [])
 
-  const doLogin = (login: string) => {
+  const doLogin = (token: string) => {
+    localStorage.setItem('token', token)
+    const { login } = jwt_decode<IUser>(token)
     setAuthState({ login, isLoginned: true })
-    localStorage.setItem('auth', login)
   }
 
   const doLogout = () => {
     setAuthState({ login: '', isLoginned: false })
-    localStorage.removeItem('auth')
+    localStorage.removeItem('token')
   }
 
   return (

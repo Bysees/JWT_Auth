@@ -1,4 +1,4 @@
-import { IUser } from './../IUser';
-export interface AuthResponse extends IUser {
+export interface AuthResponse {
+  token: string
 }
 

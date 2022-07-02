@@ -30,12 +30,10 @@ const Authentification: FC<Props> = ({ registration = false }) => {
     }
 
     try {
-      await AuthService[authQuery]({ login, password })
+      const { data } = await AuthService[authQuery]({ login, password })
 
-      doLogin(login)
+      doLogin(data.token)
       redirect('/')
-      setLogin('')
-      setPassword('')
     } catch (err) {
       responseErrorHandler(err, setError)
     }

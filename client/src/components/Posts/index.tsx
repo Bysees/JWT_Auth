@@ -1,12 +1,12 @@
 import { FC, useState } from "react"
 import { getCurrentDate } from "../../utils/date"
 import { PostService } from '../../api/PostService'
+import { responseErrorHandler } from "../../api"
+import { useFetch } from "../../hooks/useFetch"
+import { IPost } from "../../models/IPost"
 import Post from "./Post"
 import PostForm from "./PostForm"
 import styles from './index.module.scss'
-import { useFetch } from "../../hooks/useFetch"
-import { IPost } from "../../models/IPost"
-import { responseErrorHandler } from "../../api"
 
 
 interface Props {
@@ -17,7 +17,6 @@ type MutateError = 'create' | 'update' | 'delete' | null //? Подумать к
 
 const Posts: FC<Props> = ({ login }) => {
 
-  //? Возвращённая ошибка то не обновляется
   const [posts, error, setPosts] = useFetch<IPost[]>(PostService.getAll, [])
   const [mutateError, setMutateError] = useState<string | null>(null)
 

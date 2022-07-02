@@ -16,11 +16,10 @@ export class AuthService {
     return response
   }
 
-  //? Мб потом понадобиится
-  // static async check() {
-  //   const response = await http.get('/auth')
-  //   return response
-  // }
+  static async check(): Promise<AxiosResponse<AuthResponse>> {
+    const response = await http.get<AuthResponse>(`/auth`)
+    return response
+  }
 }
 
 

@@ -1,9 +1,11 @@
 const ApiError = require("../error/apiError")
+const TokenService = require("../services/tokenService")
 
 const checkAuth = (req, res, next) => {
-  const login = req.headers.authentification?.split(' ')[1]
+  const token = req.headers.authorization?.split(' ')[1]
 
-  if (login) {
+  if (token) {
+    const { login } = TokenService.verify(token)
     req.auth = { login }
     return next()
   }

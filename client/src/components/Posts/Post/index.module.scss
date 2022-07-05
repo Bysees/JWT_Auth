@@ -42,13 +42,20 @@
 
   .text {
     min-height: 70px;
-    height: 70px;
     padding-bottom: 5px;
     p {
       padding-top: 5px;
       height: 100%;
       margin: 0;
       font-size: 1.1rem;
+      .text__error {
+        display: block;
+        margin: 10px 0 0px;
+        text-align: center;
+        color: red;
+        font-weight: 500;
+        font-size: 1rem;
+      }
     }
     textarea {
       height: 90%;

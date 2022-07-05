@@ -1,4 +1,5 @@
-const User = require('./user')
-const Post = require('./post')
+const UserModel = require('./userModel')
+const PostModel = require('./postModel')
+const TokenModel = require('./tokenModel')
 
-module.exports = { User, Post }
+module.exports = { UserModel, PostModel, TokenModel }

@@ -3,20 +3,20 @@ import { IPost } from '../../../models/IPost'
 import styles from './index.module.scss'
 
 
-interface Props extends Omit<IPost, '_id'> {
+interface Props extends Omit<IPost, 'id'> {
+  updatePostError: string | null
   username: string
   updatePost: (editedText: string) => Promise<void>
   removePost: () => Promise<void>
 }
 
-const Post: FC<Props> = ({ text, timestamp, username, updatePost, removePost }) => {
+const Post: FC<Props> = ({ updatePostError, text, timestamp, username, updatePost, removePost }) => {
 
   const [updating, setUpdating] = useState<boolean>(false)
   const [deleting, setDeleting] = useState<boolean>(false)
   const [isEdit, toogleEdit] = useState<boolean>(false)
   const [editedText, setEditedText] = useState<string>(text)
   useEffect(() => setEditedText(text), [text])
-
 
   const onBlurHandler = async () => {
     if (!editedText || editedText === text) {
@@ -62,6 +62,11 @@ const Post: FC<Props> = ({ text, timestamp, username, updatePost, removePost }) 
           />
           : <p onDoubleClick={() => toogleEdit(true)}>
             {text}
+            {updatePostError &&
+              <span className={styles.text__error}>
+                {updatePostError}
+              </span>
+            }
           </p>
         }
       </div>

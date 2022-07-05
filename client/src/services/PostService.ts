@@ -1,15 +1,12 @@
 import { AxiosResponse } from 'axios';
-import { http } from "."
+import { http } from "../http/http"
 import { IPost } from '../models/IPost';
 
 
-type CreatePost = Omit<IPost, '_id'>
+type CreatePost = Omit<IPost, 'id'>
 type UpdatePost = Pick<IPost, 'text'>
 
 export class PostService {
-  //? Возможно явно указывать Promise<AxiosResponse<IPost>> излишне,
-  //? т.к. тип и так выводится, когда мы передаём дженерик в http.post<IPost>,
-  //? но оставлю для наглядности.
   static async create(body: CreatePost): Promise<AxiosResponse<IPost>> {
     const response = await http.post<IPost>('/post', body)
     return response

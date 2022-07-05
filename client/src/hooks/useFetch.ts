@@ -1,6 +1,6 @@
 import { AxiosResponse } from 'axios';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import { responseErrorHandler } from '../api';
+import { responseErrorHandler } from "../http/responseErrorHandler"
 
 type ErrorType = string | null
 type ReturnHookType<T> = [T, ErrorType, Dispatch<SetStateAction<T>>]
@@ -17,7 +17,8 @@ export function useFetch<T>(fetchCallback: FetchType<T>, initial: T): ReturnHook
         const response = await fetchCallback()
         setState(response.data)
       } catch (err) {
-        responseErrorHandler(err, setError)
+        const errMessage = responseErrorHandler(err)
+        setError(errMessage)
       }
     }
 

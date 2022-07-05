@@ -1,5 +1,5 @@
 export interface IPost {
-  _id: string
+  id: string
   timestamp: string
   text: string
 }

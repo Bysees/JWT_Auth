@@ -1,7 +1,7 @@
 import { FC, useState } from "react"
 import { getCurrentDate } from "../../utils/date"
-import { PostService } from '../../api/PostService'
-import { responseErrorHandler } from "../../api"
+import { PostService } from '../../services/PostService'
+import { responseErrorHandler } from "../../http/responseErrorHandler"
 import { useFetch } from "../../hooks/useFetch"
 import { IPost } from "../../models/IPost"
 import Post from "./Post"
@@ -13,12 +13,16 @@ interface Props {
   login: string
 }
 
-type MutateError = 'create' | 'update' | 'delete' | null //? Подумать как реализовать...
+export type MutateErrorType = {
+  message: string
+  id: string
+}
 
 const Posts: FC<Props> = ({ login }) => {
 
   const [posts, error, setPosts] = useFetch<IPost[]>(PostService.getAll, [])
-  const [mutateError, setMutateError] = useState<string | null>(null)
+  const [updatePostError, setUpdatePostError] = useState<MutateErrorType | null>(null)
+  const [addPostError, setAddPostError] = useState<string | null>(null)
 
   const addPost = async (text: string) => {
     if (!text) return
@@ -32,32 +36,34 @@ const Posts: FC<Props> = ({ login }) => {
       const response = await PostService.create(post)
       setPosts(posts => [...posts, response.data])
     } catch (err) {
-      responseErrorHandler(err, setMutateError)
+      const errMessage = responseErrorHandler(err)
+      setAddPostError(errMessage)
     }
   }
 
-  const removePost = (_id: string) => async () => {
+  const removePost = (id: string) => async () => {
     try {
-      await PostService.remove(_id)
-
-      setPosts(posts => posts.filter(post => post._id !== _id))
+      await PostService.remove(id)
+      setPosts(posts => posts.filter(post => post.id !== id))
     } catch (err) {
-      responseErrorHandler(err, setMutateError)
+      responseErrorHandler(err)
     }
   }
 
-  const updatePost = (_id: string) => async (editedText: string) => {
+  const updatePost = (id: string) => async (editedText: string) => {
     try {
-      await PostService.update(_id, { text: editedText })
-
-      setPosts(posts => posts.map(post => {
-        if (post._id === _id) {
-          return { ...post, text: editedText }
-        }
-        return post
-      }))
+      await PostService.update(id, { text: editedText })
+      setPosts(posts => {
+        return posts.map(post => {
+          if (post.id === id) {
+            return { ...post, text: editedText }
+          }
+          return post
+        })
+      })
     } catch (err) {
-      responseErrorHandler(err, setMutateError)
+      const errMessage = responseErrorHandler(err)
+      setUpdatePostError({ message: errMessage, id })
     }
   }
 
@@ -66,19 +72,26 @@ const Posts: FC<Props> = ({ login }) => {
       <h1>{login}</h1>
 
       <PostForm addPost={addPost} />
+      {addPostError && <div className={styles.error}>
+        {addPostError}
+      </div>}
 
       <section>
-        {error && <div>{error}</div>}
-        {posts.map(({ _id, timestamp, text }) => (
+        {error && <div className={styles.error}>{error}</div>}
+        {posts.map(({ id, timestamp, text }) => (
           <Post
-            key={_id}
+            key={id}
             username={login}
             text={text}
             timestamp={timestamp}
-            updatePost={updatePost(_id)}
-            removePost={removePost(_id)}
+            updatePostError={updatePostError?.id === id ? updatePostError.message : null}
+            updatePost={updatePost(id)}
+            removePost={removePost(id)}
           />
         )).reverse()}
+        {!posts.length && (
+          <h2>You haven't been posted any yet!</h2>
+        )}
       </section>
 
     </div>

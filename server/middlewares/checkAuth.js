@@ -1,16 +1,20 @@
 const ApiError = require("../error/apiError")
-const TokenService = require("../services/tokenService")
+const tokenService = require("../services/tokenService")
 
 const checkAuth = (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1]
+  try {
+    const accessToken = req.headers.authorization?.split(' ')[1]
 
-  if (token) {
-    const { login } = TokenService.verify(token)
-    req.auth = { login }
-    return next()
+    if (accessToken) {
+      const { login, userId } = tokenService.verifyAccessToken(accessToken)
+
+      req.user = { login, userId }
+      return next()
+    }
+
+  } catch (err) {
+    next(ApiError.unauthorized())
   }
-
-  return next(ApiError.unauthorized('You must be authorized for this operation'))
 }
 
 module.exports = checkAuth

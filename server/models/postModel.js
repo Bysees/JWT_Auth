@@ -3,7 +3,7 @@ const { Schema } = mongoose
 
 //? Удалять versionKey плохая практика! Но пока что удалю.
 const options = {
-  versionKey: false,
+  versionKey: false
 }
 
 const post = new Schema({
@@ -11,9 +11,6 @@ const post = new Schema({
   timestamp: { type: String, required: true },
   text: { type: String, required: true }
 }, options)
-
-//? Изначально думал, что это помогает указывать ID, но вроде оно и так указывается.
-// post.path('_id')
 
 module.exports = mongoose.model('Post', post)
 

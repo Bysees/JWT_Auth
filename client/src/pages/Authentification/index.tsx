@@ -1,10 +1,8 @@
 import { FC, FormEvent, useContext, useState } from "react"
 import styles from './index.module.scss'
-import { AuthService } from '../../api/AuthService'
 import { AuthContext } from "../../context/auth"
 import { useNavigate } from "react-router-dom"
 import { validator } from "../../utils/authValidator"
-import { responseErrorHandler } from "../../api"
 
 interface Props {
   registration?: boolean
@@ -23,20 +21,19 @@ const Authentification: FC<Props> = ({ registration = false }) => {
 
   const doAuth = async (event: FormEvent) => {
     event.preventDefault()
-    const errorMessage = validator(login, password)
 
+    const errorMessage = validator(login, password)
     if (errorMessage) {
       return setError(errorMessage)
     }
 
-    try {
-      const { data } = await AuthService[authQuery]({ login, password })
-
-      doLogin(data.token)
-      redirect('/')
-    } catch (err) {
-      responseErrorHandler(err, setError)
+    const responseError = await doLogin(authQuery, { login, password })
+    if (responseError) {
+      setError(responseError)
+      return
     }
+
+    redirect('/')
   }
 
   return (

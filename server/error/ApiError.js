@@ -9,8 +9,8 @@ class ApiError extends Error {
     return new ApiError(400, message)
   }
 
-  static unauthorized(message) {
-    return new ApiError(401, message)
+  static unauthorized() {
+    return new ApiError(401, 'You must be authorized for this operation')
   }
 
   static forbidden(message) {

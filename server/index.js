@@ -1,4 +1,5 @@
 require('dotenv').config()
+const coockieParser = require('cookie-parser')
 const express = require('express')
 const cors = require('cors')
 const mongoose = require('mongoose');
@@ -10,6 +11,7 @@ const routes = require('./router')
 const errorHandler = require('./middlewares/ErrorHandler.js')
 
 
+app.use(coockieParser())
 app.use(cors({
   credentials: true,
   origin: CLIENT_URL
@@ -22,7 +24,7 @@ app.use(errorHandler)
 const start = async () => {
   try {
     await mongoose.connect(DB_URL)
-    console.log('Соеденение с mongo DB установленно')
+    console.log('The connection to MongoDB is established')
 
     app.listen(_PORT, () => console.log(`Server listening on port ${_PORT}`))
   } catch (err) {
